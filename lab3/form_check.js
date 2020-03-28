@@ -1,25 +1,15 @@
-function isEmpty(text) {
-    return (!text || 0 === text.length)
-}
-
-function isWhiteSpaceOrEmpty(str) {
+function isStringEmptyOrContainsOnlyWhitespaces(str) {
     return /^[\s\t\r\n]*$/.test(str);
 }
 
-function isEmailCorrect(str) {
-    let email = /^[a-zA-Z_0-9\.]+@[a-zA-Z_0-9\.]+\.[a-zA-Z][a-zA-Z]+$/;
-    if (email.test(str)) {
-        return true;
-    }
-    else {
-        return false;
-    }
+function isEmailInvalid(email) {
+    return !/^[a-zA-Z_0-9\.]+@[a-zA-Z_0-9\.]+\.[a-zA-Z][a-zA-Z]+$/.test(email);
 }
 
-function checkStringAndFocus(obj, msg) {
+function checkStringAndFocus(obj, msg, func) {
     let str = obj.value;
     let errorFieldName = "e_" + obj.name.substr(2, obj.name.length);
-    if (isWhiteSpaceOrEmpty(str)) {
+    if (func(str)) {
         document.getElementById(errorFieldName).innerHTML = msg;
         obj.focus();
         return false;
@@ -30,33 +20,70 @@ function checkStringAndFocus(obj, msg) {
     }
 }
 
-function checkEmailAndFocus(obj) {
-    let str = obj.value;
-    let errorFieldName = "e_" + obj.name.substr(2, obj.name.length);
-    if (isEmailCorrect(str)) {
-        document.getElementById(errorFieldName).innerHTML = "";
-        return true;
-    }
-    else {
-        document.getElementById(errorFieldName).innerHTML = "Podaj poprawny email!";
-        obj.focus();
-        return false;
+function validate(personalDataForm) {
+    var validated;
+    validated = checkStringAndFocus(personalDataForm.elements["f_imie"], "Podaj imię!", isStringEmptyOrContainsOnlyWhitespaces);
+    if (!validated) return validated;
+    validated = checkStringAndFocus(personalDataForm.elements["f_nazwisko"], "Podaj nazwisko!", isStringEmptyOrContainsOnlyWhitespaces);
+    if (!validated) return validated;
+    validated = checkStringAndFocus(personalDataForm.elements["f_email"], "Podaj poprawny email!", isEmailInvalid);
+    if (!validated) return validated;
+    validated = checkStringAndFocus(personalDataForm.elements["f_kod"], "Podaj kod pocztowy!", isStringEmptyOrContainsOnlyWhitespaces);
+    if (!validated) return validated;
+    validated = checkStringAndFocus(personalDataForm.elements["f_ulica"], "Podaj ulicę!", isStringEmptyOrContainsOnlyWhitespaces);
+    if (!validated) return validated;
+    validated = checkStringAndFocus(personalDataForm.elements["f_miasto"], "Podaj miasto!", isStringEmptyOrContainsOnlyWhitespaces);
+    if (!validated) return validated;
+    return true;
+}
+
+function showElement(e) {
+    document.getElementById(e).style.display = '';
+}
+
+function hideElement(e) {
+    document.getElementById(e).style.display = 'none';
+}
+
+function alterRows(i, e) {
+    if (e) {
+        if (i % 2 == 1) {
+            e.setAttribute("style", "background-color: Aqua;");
+        }
+        e = e.nextSibling;
+        while (e && e.nodeType != 1) {
+            e = e.nextSibling;
+        }
+        alterRows(++i, e);
     }
 }
 
-function validate(personalDataForm) {
-    var validated;
-    validated = checkStringAndFocus(personalDataForm.elements["f_imie"], "Podaj imię!");
-    if (!validated) return validated;
-    validated = checkStringAndFocus(personalDataForm.elements["f_nazwisko"], "Podaj nazwisko!");
-    if (!validated) return validated;
-    validated = checkEmailAndFocus(personalDataForm.elements["f_email"]);
-    if (!validated) return validated;
-    validated = checkStringAndFocus(personalDataForm.elements["f_kod"], "Podaj kod pocztowy!");
-    if (!validated) return validated;
-    validated = checkStringAndFocus(personalDataForm.elements["f_ulica"], "Podaj ulicę!");
-    if (!validated) return validated;
-    validated = checkStringAndFocus(personalDataForm.elements["f_miasto"], "Podaj miasto!");
-    if (!validated) return validated;
-    return true;
+function nextNode(e) {
+    while (e && e.nodeType != 1) {
+        e = e.nextSibling;
+    }
+    return e;
+}
+
+function prevNode(e) {
+    while (e && e.nodeType != 1) {
+        e = e.previousSibling;
+    }
+    return e;
+}
+
+function swapRows(b) {
+    let tab = prevNode(b.previousSibling);
+    let tBody = nextNode(tab.firstChild);
+    let lastNode = prevNode(tBody.lastChild);
+    tBody.removeChild(lastNode);
+    let firstNode = nextNode(tBody.firstChild);
+    tBody.insertBefore(lastNode, firstNode);
+}
+
+function cnt(form, msg, maxSize) {
+    if (form.value.length > maxSize)
+        form.value = form.value.substring(0, maxSize);
+    else
+        msg.innerHTML = maxSize - form.value.length;
 }
